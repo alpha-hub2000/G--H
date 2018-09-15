@@ -35,7 +35,7 @@ namespace URWPGSim2D.Strategy
         /// <returns>队伍名称字符串</returns>
         public string GetTeamName()
         {
-            return "水中搬运 Test Team";
+            return "生死时速_defence";
         }
         static int flag = 0;
         int times = 0;
@@ -110,9 +110,11 @@ namespace URWPGSim2D.Strategy
             #region 获得鱼和球的数组
             RoboFish[] fishes = new RoboFish[1];
             fishes[0] = mission.TeamsRef[teamId].Fishes[0];
-            Ball[] balls = new Ball[1];
+           // fishes[1] = mission.TeamsRef[(teamId + 1) % 2].Fishes[1];
+            //fishes[2] = mission.TeamsRef[(teamId + 1) % 2].Fishes[2];
+            Ball[] balls = new Ball[2];
             balls[0] = mission.EnvRef.Balls[0];
-            //balls[1] = mission.EnvRef.Balls[1];
+            balls[1] = mission.EnvRef.Balls[1];
             #endregion
 
             #region (flag=0)游到第一个球附近
@@ -120,36 +122,204 @@ namespace URWPGSim2D.Strategy
             {
                 xna.Vector3 despt1 = new xna.Vector3(-1200, 0, 700);
                 xna.Vector3 despt3 = new xna.Vector3(-1000, 0, 800);
-              
-                if (Method.GetDistance(fishes[0].PositionMm,despt3)<=100)
+
+                if (Method.GetDistance(fishes[0].PositionMm, despt3) <= 150)
                 {
                     flag++;
-                    
+
                 }
                 else
                 {
-                    Method.approachToPoint(ref decisions[0], fishes[0], despt1, 14, 8, 7);
+                    Method.approachToPoint(ref decisions[0], fishes[0], despt1, 14, 12, 10);
                 }
             }
 
             #endregion
 
-            #region (flag=1)顶qiu
+            #region (flag=1)顶球
             if (flag == 1)
             {
-                //xna.Vector3 balls1opt = new xna.Vector3(-1350, 0, 1050);
+                xna.Vector3 despt11 = new xna.Vector3(-600, 0, 1500);
                 xna.Vector3 despt2 = new xna.Vector3(-2250, 0, 1500);
-                times = 0;
-                StrategyHelper.Helpers.Dribble(ref decisions[0], mission.TeamsRef[teamId].Fishes[0],balls[0].PositionMm,Method.GetTwoPAngel(despt2,fishes[0].PositionMm),
-                    2f,2f,20f,8,4,5,mission.CommonPara.MsPerCycle,false);
-                //Method.Dribble(ref decisions[0], fishes[0], balls[0].PositionMm,despt2, 30f, 8, 58,mission,ref times);
+                if (Method.GetDistance(balls[0].PositionMm, despt2) <=150||Method.GetDistance(balls[0].PositionMm,despt11)<150)
+                {
+                    flag++;
+                }
+                else
+                {
+                    if (fishes[0].BodyDirectionRad > 0 && fishes[0].BodyDirectionRad < (Math.PI / 2.0))
+                    {
+                        StrategyHelper.Helpers.Dribble(ref decisions[0], fishes[0], balls[0].PositionMm, Method.GetAngle(fishes[0].PositionMm, despt11),
+                    2f, 2f, 20f, 14, 12, 5, mission.CommonPara.MsPerCycle, false);
+                    }
+                    else
+                    {
+                        StrategyHelper.Helpers.Dribble(ref decisions[0], mission.TeamsRef[teamId].Fishes[0], balls[0].PositionMm, Method.GetAngle(fishes[0].PositionMm, despt2),
+                           2f, 2f, 20f, 14, 12, 5, mission.CommonPara.MsPerCycle, false);//8  4  5  , 10  8   5   
+                    }
+
+                }
             }
 
             #endregion
+
+            #region 
+
+
+            #endregion
+
+
+            #region (flag=2)前往拦截二号球位置
+
+            if (flag == 2)
+            {
+                //xna.Vector3 enemy1_pt = mission.TeamsRef[(1 + teamId) % 2].Fishes[1].PositionMm;
+                //xna.Vector3 enemy2_pt = mission.TeamsRef[(1 + teamId) % 2].Fishes[0].PositionMm;
+                xna.Vector3 despt4 = new xna.Vector3(-500, 0, 0);
+                xna.Vector3 despt5 = new xna.Vector3(-800, 0, 0);
+                if (Method.GetDistance(fishes[0].PositionMm, despt5) <= 300)
+                {
+                    flag++;
+                }
+                else
+                {
+                    Method.approachToPoint(ref decisions[0], fishes[0], despt4, 14, 12, 3);
+
+                }
+            }
+
+            #endregion
+
+            #region  (flag=3)拦截二号球
+            if (flag == 3)
+            {
+               
+                
+                xna.Vector3 mark4 = new xna.Vector3(-800, 0, -400);
+                if (Method.GetDistance(balls[1].PositionMm, mark4) <= 500)
+                {
+                    flag = 31;
+                }
+                else if (balls[1].PositionMm.X <= 400)
+                {
+                    flag = 32;
+                }
+                
+            }
+
+
+
+            #endregion
+
+            #region   （flag=31）顶至左上障碍左边
+
+            if (flag == 31)
+            {
+                xna.Vector3 despt6 = new xna.Vector3(-600, 0, -1500);
+                if (Method.GetDistance(balls[1].PositionMm, despt6) < 150)
+                {
+                    flag = 4;
+                }
+                else
+                {
+                    StrategyHelper.Helpers.Dribble(ref decisions[0], mission.TeamsRef[teamId].Fishes[0], balls[1].PositionMm, Method.GetAngle(fishes[0].PositionMm, despt6),
+                        2f, 2f, 20f, 14, 12, 5, mission.CommonPara.MsPerCycle, false);
+                }
+            }
+
+            #endregion
+
+            #region （flag=32）顶至左上障碍右边
+
+            if (flag == 32)
+            {
+                xna.Vector3 despt7 = new xna.Vector3(-500, 0, -1500);
+                if (Method.GetDistance(balls[1].PositionMm, despt7) < 150)
+                {
+                    flag = 4;
+                }
+                else
+                {
+                    StrategyHelper.Helpers.Dribble(ref decisions[0], mission.TeamsRef[teamId].Fishes[0], balls[1].PositionMm, Method.GetAngle(fishes[0].PositionMm, despt7),
+                       2f, 2f, 20f, 14, 12, 5, mission.CommonPara.MsPerCycle, false);
+                }
+            }
+
+            #endregion
+
+            #region (flag=4)再次拦截一号球(judgement)
+
+            if (flag == 4)
+            {
+                xna.Vector3 despt8 = new xna.Vector3(-800, 0, 0);
+                xna.Vector3 despt6 = new xna.Vector3(-600, 0, -1500);
+                xna.Vector3 despt7 = new xna.Vector3(-500, 0, -1500);
+                if (Method.GetDistance(balls[0].PositionMm, despt8) < 600&&Method.GetDistance(balls[1].PositionMm,despt6)<400)
+                {
+                    flag++;
+                }
+                else
+                {
+                    flag = 3;
+                }
+               
+            }
+
+            #endregion
+
+            #region (flag=5)拦截一号球位置
+            if (flag == 5)
+            {
+                xna.Vector3 despt8 = new xna.Vector3(-800, 0, 0);
+                if (Method.GetDistance(fishes[0].PositionMm, despt8) <= 300)
+                {
+                    flag++;
+                }
+                else
+                {
+                    Method.approachToPoint(ref decisions[0], fishes[0], despt8, 14, 12, 3);
+                }
+            }
+            #endregion
+
+            #region (flag=6)拦截一号球
+
+            if (flag == 6)
+            {
+                xna.Vector3 despt9 = new xna.Vector3(-500, 0, 1500);
+                if (Method.GetDistance(balls[0].PositionMm, despt9) < 150)
+                {
+                    flag++;
+                }
+                else
+                {
+                    StrategyHelper.Helpers.Dribble(ref decisions[0], mission.TeamsRef[teamId].Fishes[0], balls[0].PositionMm, Method.GetAngle(fishes[0].PositionMm, despt9),
+                      2f, 2f, 20f, 14, 12, 5, mission.CommonPara.MsPerCycle, false);
+                }
+            }
+
+            #endregion
+
+            #region (flag==7)判断二号球防守是否失手{
+
+            if (flag == 7)
+            {
+                xna.Vector3 despt7 = new xna.Vector3(-500, 0, -1500);
+                xna.Vector3 despt6 = new xna.Vector3(0, 0, -1500);
+                if (Method.GetDistance(balls[1].PositionMm, despt7)>500|| Method.GetDistance(balls[1].PositionMm, despt6)>500)
+                {
+                    flag = 3;
+                }
+        
+            }
+
+            #endregion
+
 
             #endregion
 
             return decisions;
+            
         }
     }
 }
